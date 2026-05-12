@@ -82,9 +82,9 @@
         
         .group-badge {
             min-width: 14px; height: 14px; padding: 0 2px; border-radius: 2px; 
-            font-weight: 800; font-size: 7px; color: white; 
+            font-weight: 500; font-size: 12px; color: black; 
             display: flex; align-items: center; justify-content: center; 
-            text-shadow: 0 1px 1px black; border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .modal-overlay {
@@ -103,7 +103,7 @@
             box-shadow: 0 0 12px rgba(233, 69, 96, 0.6); transform: scale(1.05);
         }
 
-        .chip-grid { display: flex; flex-wrap: wrap; gap: 4px; margin: 0.8rem 0; max-height: 160px; overflow-y: auto; }
+        .chip-grid { display: flex; flex-wrap: wrap; gap: 4px; margin: 0.8rem 0; max-height: 170px; overflow-y: auto; }
         .chip {
             width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
             font-weight: 700; background: #3a3a50; border-radius: 8px; border: 2px solid #555;
@@ -113,7 +113,7 @@
         .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
     </style>
 </head>
-<body>
+<body id="swipeArea">
 
 <div class="app">
     <div class="header">
@@ -138,7 +138,7 @@
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
         <h3 id="modalTitle">Neue Gruppe</h3>
-        <div class="button-group" style="margin-bottom: 15px;">
+        <div class="button-group" style="margin-bottom: 15px;margin-top: 15px;">
             <button onclick="setGType('one_of_two')" id="btn-one_of_two" class="type-btn">1 von 2</button>
             <button onclick="setGType('one_of_three')" id="btn-one_of_three" class="type-btn">1 von 3</button>
             <button onclick="setGType('two_of_three')" id="btn-two_of_three" class="type-btn">2 von 3</button>
@@ -168,6 +168,51 @@
         let undoStack = [], redoStack = [];
         let currentGType = 'one_of_two';
 
+        // --- GESTURE LOGIC ---
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const swipeThreshold = 80;
+
+        document.getElementById('swipeArea').addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, false);
+
+        document.getElementById('swipeArea').addEventListener('touchend', e => {
+            let x = e.changedTouches[0].screenX;
+            let y = e.changedTouches[0].screenY;
+            handleSwipe(x, y);
+        }, false);
+
+        function handleSwipe(endX, endY) {
+            const diffX = endX - touchStartX;
+            const diffY = Math.abs(endY - touchStartY);
+
+            // Verhindert Swipe-Erkennung wenn man eigentlich scrollen wollte (Y-Abweichung zu groß)
+            if (diffY > 100) return; 
+
+            if (diffX < -swipeThreshold) {
+                // Swipe Links -> Undo
+                if (undoStack.length > 0) undoAction();
+            } else if (diffX > swipeThreshold) {
+                // Swipe Rechts -> Redo
+                if (redoStack.length > 0) redoAction();
+            }
+        }
+
+        function undoAction() {
+            redoStack.push(JSON.parse(JSON.stringify(data)));
+            data = undoStack.pop();
+            render();
+        }
+
+        function redoAction() {
+            undoStack.push(JSON.parse(JSON.stringify(data)));
+            data = redoStack.pop();
+            render();
+        }
+
+        // --- GAME LOGIC ---        
         function initData() {
             data.players = Array.from({length: NUM_PLAYERS}, () => 
                 Array.from({length: SUSPECTS.length}, () => ({ explicit: 'unknown', groups: [] }))
@@ -329,9 +374,8 @@
 
         window.setGType = (t) => {
             currentGType = t;
-            ['btn-one_of_two', 'btn-one_of_three', 'btn-two_of_three'].forEach(id => {
-                document.getElementById(id).style.background = id.includes(t.replace(/_/g, '-')) ? '#e94560' : '#34344a';
-            });
+            document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${t}`).classList.add('active');
         };
 
         const overlay = document.getElementById('modalOverlay');
