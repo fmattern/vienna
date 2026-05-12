@@ -40,7 +40,6 @@
         button:disabled { opacity: 0.3; pointer-events: none; }
         .reset-btn { background: #b03a48; color: white; }
         
-        /* Spielerauswahl ohne Beschriftung, nur Farben */
         .player-config {
             background: #1a1a2e; border-radius: 0.8rem; padding: 0.4rem;
             display: grid; grid-template-columns: repeat(4, 1fr);
@@ -94,6 +93,16 @@
         }
         .modal-overlay.active { display: flex; }
         .modal { background: #252538; padding: 1.2rem; border-radius: 1.2rem; width: 92%; max-width: 400px; color: #ddd; border: 1px solid #e94560; }
+        .type-selector { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+        .type-btn {
+            flex: 1; padding: 0.6rem 0.2rem; border-radius: 0.6rem; background: #34344a; 
+            color: #888; border: 2px solid transparent; font-size: 0.75rem; font-weight: bold;
+        }
+        .type-btn.active {
+            background: #e94560; color: white; border-color: white;
+            box-shadow: 0 0 12px rgba(233, 69, 96, 0.6); transform: scale(1.05);
+        }
+
         .chip-grid { display: flex; flex-wrap: wrap; gap: 4px; margin: 0.8rem 0; max-height: 160px; overflow-y: auto; }
         .chip {
             width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
@@ -130,9 +139,9 @@
     <div class="modal">
         <h3 id="modalTitle">Neue Gruppe</h3>
         <div class="button-group" style="margin-bottom: 15px;">
-            <button onclick="setGType('one_of_two')" id="btn-1-2">1 von 2</button>
-            <button onclick="setGType('one_of_three')" id="btn-1-3">1 von 3</button>
-            <button onclick="setGType('two_of_three')" id="btn-2-3">2 von 3</button>
+            <button onclick="setGType('one_of_two')" id="btn-one_of_two" class="type-btn">1 von 2</button>
+            <button onclick="setGType('one_of_three')" id="btn-one_of_three" class="type-btn">1 von 3</button>
+            <button onclick="setGType('two_of_three')" id="btn-two_of_three" class="type-btn">2 von 3</button>
         </div>
         <div class="chip-grid" id="chipGrid"></div>
         <div class="modal-actions">
