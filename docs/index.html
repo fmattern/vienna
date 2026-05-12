@@ -3,7 +3,7 @@
 <head>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#e94560">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="vienna-192.png">
 
     <script>
     if ('serviceWorker' in navigator) {
@@ -12,20 +12,9 @@
     </script>    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
-    <title>Vienna – Logical Color Edition</title>
+    <title>Vienna – Logical Edition</title>
     <style>
-        * {    box-sizing: border-box; 
-                margin: 0; 
-                padding: 0; 
-                -webkit-user-select: none;
-                user-select: none;
-                -webkit-touch-callout: none;
-            }
-            
-        input {
-                -webkit-user-select: text;
-                user-select: text;
-    }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             background: #12121f;
             font-family: 'Segoe UI', system-ui, sans-serif;
@@ -46,24 +35,25 @@
         .button-group { display: flex; gap: 0.3rem; }
         button {
             background: #34344a; border: none; color: #ddd; font-weight: 600;
-            padding: 0.3rem 0.7rem; border-radius: 1.2rem; font-size: 0.7rem;
+            padding: 0.4rem 0.7rem; border-radius: 1.2rem; font-size: 0.7rem;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
         }
         button:disabled { opacity: 0.3; pointer-events: none; }
         .reset-btn { background: #b03a48; color: white; }
         
         .player-config {
-            background: #1a1a2e; border-radius: 0.8rem; padding: 0.5rem;
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem; border: 1px solid #404060;
+            background: #1a1a2e; border-radius: 0.8rem; padding: 0.4rem;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 0.4rem; border: 1px solid #404060;
         }
-        .player-label { display: flex; align-items: center; gap: 0.4rem; padding: 2px; border-radius: 0.5rem; }
-        .player-label span { font-weight: bold; font-size: 0.7rem; width: 20px; }
-        .player-label input {
-            flex: 1; padding: 0.3rem; font-weight: 600;
-            background: #2b2b42; border: 1px solid #565676; border-radius: 0.4rem; 
-            color: white; outline: none; font-size: 0.75rem;
+        .player-input {
+            width: 100%; padding: 0.6rem 0.2rem; font-weight: 800;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; 
+            color: white; outline: none; font-size: 0.7rem; text-align: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
         }
+        .player-input::placeholder { color: rgba(255,255,255,0.4); font-size: 0.6rem; }
 
         .table-wrapper { border-radius: 0.7rem; border: 1px solid #404060; overflow: auto; background: #14142a; }
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; table-layout: fixed; }
@@ -74,38 +64,44 @@
         .grid-cell { background: #14142a; height: 52px; padding: 3px; }
         .player-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; width: 100%; height: 100%; gap: 3px; }
         
-        /* Solved States */
         .solved-row { height: 32px; cursor: pointer; }
-        .solved-cell-text { font-size: 0.8rem; font-weight: bold; padding-left: 12px; }
-        
-        .row-has .suspect-cell { color: #fff !important; }
-        .row-none { background: #5a1a1a !important; } /* Rot für Niemand hat */
-        .row-none .solved-cell-text { color: #ffb3b3; font-style: italic; }
+        .solved-cell-text { font-size: 0.8rem; font-weight: bold; padding-left: 12px; color: #fff; }
+        .row-none { background: #5a1a1a !important; } 
         .row-none .suspect-cell { background: #7a2020 !important; color: #ffcccc !important; text-decoration: line-through; }
 
         .quadrant {
             display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
             font-weight: 700; font-size: 0.7rem; border-radius: 4px; background: #23233a;
-            color: #fff; transition: 0.2s; border: 1px solid #333; gap: 1px; padding: 1px;
-            overflow: hidden; position: relative;
+            color: #fff; border: 1px solid #333; gap: 1px; padding: 1px; overflow: hidden;
         }
         .quad-disabled { opacity: 0.05; background: #000; pointer-events: none; border: none; }
         .state-has-not { background: #4d2a2a; color: #ff6b6b; border-color: #c0392b; font-size: 0.9rem; }
         
         .group-badge {
             min-width: 14px; height: 14px; padding: 0 2px; border-radius: 2px; 
-            font-weight: 800; font-size: 7px; color: white; 
-            display: flex; align-items: center; justify-content: center; 
-            text-shadow: 0 1px 1px black; border: 1px solid rgba(255,255,255,0.2);
+            font-weight: 800; font-size: 7px; color: white; display: flex; 
+            align-items: center; justify-content: center; text-shadow: 0 1px 1px black; 
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        /* Modal */
+        /* MODAL & GRUPPEN-SELEKTION */
         .modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);
         }
         .modal-overlay.active { display: flex; }
         .modal { background: #252538; padding: 1.2rem; border-radius: 1.2rem; width: 92%; max-width: 400px; color: #ddd; border: 1px solid #e94560; }
+        
+        .type-selector { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+        .type-btn {
+            flex: 1; padding: 0.6rem 0.2rem; border-radius: 0.6rem; background: #34344a; 
+            color: #888; border: 2px solid transparent; font-size: 0.75rem; font-weight: bold;
+        }
+        .type-btn.active {
+            background: #e94560; color: white; border-color: white;
+            box-shadow: 0 0 12px rgba(233, 69, 96, 0.6); transform: scale(1.05);
+        }
+
         .chip-grid { display: flex; flex-wrap: wrap; gap: 4px; margin: 0.8rem 0; max-height: 160px; overflow-y: auto; }
         .chip {
             width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
@@ -113,14 +109,14 @@
         }
         .chip.selected { background: #e94560; border-color: white; color: white; }
         .chip.fixed { opacity: 0.3; }
-        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="app">
     <div class="header">
-        <h1>🕵️ Vienna</h1>
+        <h1>🕵️ Black Vienna Pro</h1>
         <div class="button-group">
             <button id="undoBtn" disabled>↩️</button>
             <button id="redoBtn" disabled>↪️</button>
@@ -140,12 +136,11 @@
 
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
-        <h3 id="modalTitle">Neue Gruppe</h3>
-        <div style="margin: 10px 0; font-size: 0.8rem; color: #bbb;">Typ wählen & andere Buchstaben tippen:</div>
-        <div class="button-group" style="margin-bottom: 15px;">
-            <button onclick="setGType('one_of_two')" id="btn-1-2">1 von 2</button>
-            <button onclick="setGType('one_of_three')" id="btn-1-3">1 von 3</button>
-            <button onclick="setGType('two_of_three')" id="btn-2-3">2 von 3</button>
+        <h3 id="modalTitle" style="margin-bottom: 15px;">Neue Gruppe</h3>
+        <div class="type-selector">
+            <button onclick="setGType('one_of_two')" id="btn-one_of_two" class="type-btn">1 von 2</button>
+            <button onclick="setGType('one_of_three')" id="btn-one_of_three" class="type-btn">1 von 3</button>
+            <button onclick="setGType('two_of_three')" id="btn-two_of_three" class="type-btn">2 von 3</button>
         </div>
         <div class="chip-grid" id="chipGrid"></div>
         <div class="modal-actions">
@@ -159,16 +154,11 @@
     (() => {
         const SUSPECTS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÖ'.split('');
         const NUM_PLAYERS = 4;
-        const STORAGE_KEY = 'vienna_pro_stable_v4_colors';
-        const P_COLORS = ['#e67e22', '#3498db', '#2ecc71', '#9b59b6']; // Feste Spielerfarben
+        const STORAGE_KEY = 'vienna_pro_v8_styled_types';
+        const P_COLORS = ['#e67e22', '#3498db', '#2ecc71', '#9b59b6'];
         const GROUP_COLORS = ['#e74c3c', '#f1c40f', '#1abc9c', '#e84393', '#00b894', '#6c5ce7', '#00cec9'];
 
-        let data = { 
-            players: [], 
-            playerNames: ['Spieler 1','Spieler 2','',''], 
-            nextGroupId: 1, 
-            usedColors: [] 
-        };
+        let data = { players: [], playerNames: ['', '', '', ''], nextGroupId: 1, usedColors: [] };
         let undoStack = [], redoStack = [];
         let currentGType = 'one_of_two';
 
@@ -176,8 +166,9 @@
             data.players = Array.from({length: NUM_PLAYERS}, () => 
                 Array.from({length: SUSPECTS.length}, () => ({ explicit: 'unknown', groups: [] }))
             );
+            data.playerNames = ['', '', '', ''];
             data.nextGroupId = 1; data.usedColors = [];
-            save(); render();
+            save(); renderConfig(); render();
         }
 
         function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
@@ -194,7 +185,7 @@
         function applyInference(pIdx, sIdx) {
             const player = data.players[pIdx];
             const entry = player[sIdx];
-            if (entry.explicit === 'unknown') return;
+            if (!entry || entry.explicit === 'unknown') return;
 
             if (entry.explicit === 'has') {
                 data.players.forEach((otherP, opIdx) => {
@@ -209,7 +200,7 @@
             [...entry.groups].forEach(g => {
                 const members = g.members.filter(m => m !== sIdx);
                 removeGroup(pIdx, g.id);
-                if (g.type === 'one_of_two') {
+                if (g.type === 'one_of_two' && members.length === 1) {
                     const target = members[0];
                     const newState = (entry.explicit === 'has') ? 'has_not' : 'has';
                     if (player[target].explicit === 'unknown') {
@@ -219,39 +210,19 @@
                 } else if (g.type === 'one_of_three') {
                     if (entry.explicit === 'has') {
                         members.forEach(m => { if(player[m].explicit === 'unknown') { player[m].explicit = 'has_not'; applyInference(pIdx, m); }});
-                    } else {
+                    } else if (entry.explicit === 'has_not') {
                         const newG = { id: data.nextGroupId++, type: 'one_of_two', members, color: g.color };
                         members.forEach(m => player[m].groups.push(newG));
                     }
                 } else if (g.type === 'two_of_three') {
                     if (entry.explicit === 'has_not') {
                         members.forEach(m => { if(player[m].explicit === 'unknown') { player[m].explicit = 'has'; applyInference(pIdx, m); }});
-                    } else {
+                    } else if (entry.explicit === 'has') {
                         const newG = { id: data.nextGroupId++, type: 'one_of_two', members, color: g.color };
                         members.forEach(m => player[m].groups.push(newG));
                     }
                 }
             });
-        }
-
-        function checkGlobalExclusions() {
-            let changed = false;
-            const activeIndices = getActivePlayers();
-            SUSPECTS.forEach((_, sIdx) => {
-                let notCount = 0; let unknownIdx = -1; let hasIdx = -1;
-                activeIndices.forEach(p => {
-                    const state = data.players[p][sIdx].explicit;
-                    if(state === 'has_not') notCount++;
-                    else if(state === 'has') hasIdx = p;
-                    else unknownIdx = p;
-                });
-                if(notCount === activeIndices.length - 1 && hasIdx === -1 && unknownIdx !== -1) {
-                    data.players[unknownIdx][sIdx].explicit = 'has';
-                    applyInference(unknownIdx, sIdx);
-                    changed = true;
-                }
-            });
-            if(changed) { save(); render(); }
         }
 
         function render() {
@@ -285,16 +256,15 @@
                     for(let pIdx=0; pIdx<NUM_PLAYERS; pIdx++) {
                         const quad = document.createElement('div');
                         const isActive = data.playerNames[pIdx].trim() !== '';
-                        
                         if(!isActive) {
                             quad.className = 'quadrant quad-disabled';
                         } else {
                             const entry = data.players[pIdx][sIdx];
                             quad.className = 'quadrant' + (entry.explicit === 'has_not' ? ' state-has-not' : '');
                             quad.style.borderColor = P_COLORS[pIdx];
-                            
-                            if(entry.explicit === 'has_not') quad.textContent = '✕';
-                            else {
+                            if(entry.explicit === 'has_not') {
+                                quad.textContent = '✕';
+                            } else {
                                 entry.groups.forEach(g => {
                                     const b = document.createElement('div'); b.className = 'group-badge';
                                     b.style.background = g.color; b.textContent = (g.type === 'two_of_three' ? '2' : '1') + g.members.map(m => SUSPECTS[m]).join('');
@@ -313,10 +283,7 @@
 
         function attachEvents(el, p, s) {
             let timer, isMoving = false;
-            el.onpointerdown = (e) => { 
-                isMoving = false; 
-                timer = setTimeout(() => { if(!isMoving) openModal(p, s); }, 600); 
-            };
+            el.onpointerdown = (e) => { isMoving = false; timer = setTimeout(() => { if(!isMoving) openModal(p, s); }, 600); };
             el.onpointermove = () => { isMoving = true; clearTimeout(timer); };
             el.onpointerup = (e) => {
                 clearTimeout(timer); if(isMoving) return;
@@ -327,15 +294,28 @@
                 else if (x > rect.width * 0.6) data.players[p][s].explicit = 'has';
                 else data.players[p][s].explicit = 'unknown';
                 applyInference(p, s);
-                save(); render(); checkGlobalExclusions();
+                save(); render();
             };
+        }
+
+        function renderConfig() {
+            const pConf = document.getElementById('playerConfig');
+            pConf.innerHTML = '';
+            data.playerNames.forEach((n, i) => {
+                const inp = document.createElement('input');
+                inp.className = 'player-input';
+                inp.style.background = P_COLORS[i];
+                inp.value = n;
+                inp.placeholder = `Name P${i+1}`;
+                inp.oninput = (e) => { data.playerNames[i] = e.target.value; save(); render(); };
+                pConf.appendChild(inp);
+            });
         }
 
         window.setGType = (t) => {
             currentGType = t;
-            ['btn-1-2', 'btn-1-3', 'btn-2-3'].forEach(id => {
-                document.getElementById(id).style.background = id.includes(t.replace(/_/g, '-')) ? '#e94560' : '#34344a';
-            });
+            document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${t}`).classList.add('active');
         };
 
         const overlay = document.getElementById('modalOverlay');
@@ -366,7 +346,7 @@
             data.usedColors.push(color);
             const g = { id: data.nextGroupId++, type: currentGType, members, color };
             members.forEach(m => { data.players[selP][m].groups.push(g); applyInference(selP, m); });
-            overlay.classList.remove('active'); save(); render(); checkGlobalExclusions();
+            overlay.classList.remove('active'); save(); render();
         };
 
         function updateButtons() {
@@ -381,19 +361,7 @@
 
         const saved = localStorage.getItem(STORAGE_KEY);
         if(saved) data = JSON.parse(saved); else initData();
-        
-        const pConf = document.getElementById('playerConfig');
-        pConf.innerHTML = '';
-        data.playerNames.forEach((n, i) => {
-            const l = document.createElement('div'); l.className='player-label';
-            l.style.borderLeft = `4px solid ${P_COLORS[i]}`;
-            l.innerHTML = `<span>P${i+1}</span><input value="${n}" placeholder="Leer = inaktiv">`;
-            l.querySelector('input').oninput = (e) => { 
-                data.playerNames[i] = e.target.value; 
-                save(); render(); 
-            };
-            pConf.appendChild(l);
-        });
+        renderConfig();
         render();
     })();
 </script>
