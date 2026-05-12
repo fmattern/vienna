@@ -329,7 +329,7 @@
 
         window.setGType = (t) => {
             currentGType = t;
-            ['btn-1-2', 'btn-1-3', 'btn-2-3'].forEach(id => {
+            ['btn-one_of_two', 'btn-one_of_three', 'btn-two_of_three'].forEach(id => {
                 document.getElementById(id).style.background = id.includes(t.replace(/_/g, '-')) ? '#e94560' : '#34344a';
             });
         };
